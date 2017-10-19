@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Babyguys - level 1</title>
+
+    <style>
+      html,body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding:0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height:100%;
+        touch-action: none;
+      }
+    </style>
+
+    <script src="babylon.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+
+
+  </head>
+
+  <body>
+
+   <canvas id="renderCanvas"></canvas>
+    <script>
+    //one image used as skybox http://www.babylonjs-playground.com/#27FN5R#12
+    // https://babylonjsguide.github.io/advanced/Reflect - shows which size
+    //create rectangle
+    //var options = {width:20,height:10,depth:4};  var box = BABYLON.MeshBuilder.CreateBox('box',options,scene);
+      var canvas = document.getElementById("renderCanvas");
+      var movebox6 = false;
+      //load the babylon 3d engine
+      var engine = new BABYLON.Engine(canvas,true);
+
+      //creation of function that we cal just after it's build
+      var createScene = function(){
+console.log("in create scene");
+        //create basic babylon scene object
+        var scene = new BABYLON.Scene(engine);
+        var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera",0,0,0,BABYLON.Vector3.Zero(),scene);
+        camera.setPosition(new BABYLON.Vector3(0,15,-30));
+        scene.activeCamera = camera;
+        scene.activeCamera.attachControl(canvas,false);
+        var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0,1,0),scene);
+        light.intensity = .5;
+	// test box in scene
+	//var box = new BABYLON.Mesh.CreateBox("box",5.0,scene);
+	//box.material = new BABYLON.StandardMaterial("texture1",scene);
+        //skybox
+        //manual creation free source of sykboxes, textures etc http://3delyvisions.co/skf1.htm
+        var skybox = BABYLON.Mesh.CreateBox("skyBox",100.0,scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox",scene);
+        skybox.renderingGroupID = 0;//skybox will render behind everything
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.disableLighting = true; // remove light reflections
+        skybox.material = skyboxMaterial;
+        skybox.infiniteDistance = true;  //skybox follows camera position
+
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("skybox",scene);
+        skyboxMaterial.reflectionTexture.coordinateMode = BABYLON.Texture.SKYBOX_MODE;
+
+	//import flower from sprite sheet, unanimated
+	//params: name of manager,url,max. nbr of instances,cell size, scene)
+	let flowerManager = new BABYLON.SpriteManager("flowerManagr","flower.png",16,400,scene);
+	let startx = 0;
+	let starty = -22;
+	for (let j=0;j<4;j++){
+	  for (let i=0;i<4;i++){
+	    let flower = new BABYLON.Sprite("flower",flowerManager);
+	    flower.position.y = -22;
+	    flower.position.x = startx;
+            flower.position.z = starty;
+            startx += 5;
+	    flower.width = 3;
+	    flower.height =3;
+          }
+	  startx = 0;
+          starty += 5;
+	}
+	//flower animation of sprite
+	let flrAnimateManager = new BABYLON.SpriteManager("flrAnimate","floweranimate2.png",1,100,scene);
+	let flrAnt = new BABYLON.Sprite("flrAnt",flrAnimateManager);
+	startx = 0;
+
+	flrAnt.position.y = -22;
+	flrAnt.position.x = -5;
+	flrAnt.width = 3;
+	flrAnt.height = 3;
+	//param - start frame,stop frame, loop or not, delay between frames
+	flrAnt.playAnimation(0,12,true,200);	
+
+	// import butterfly
+	var temp;
+	var newMeshes = [];
+	console.log("newMeshes ",newMeshes);
+	BABYLON.SceneLoader.ImportMesh("", "", "butterfly.babylon", scene, function (newMeshes,particleSystems,skeletons) {
+	console.log("newMeshes 2 ",newMeshes)
+	var butterfly = newMeshes[0];
+	butterfly.rotate(BABYLON.Axis.Z,-Math.PI/2,BABYLON.Space.LOCAL);
+	butterfly.rotate(BABYLON.Axis.Y,  -Math.PI/2,BABYLON.Space.LOCAL);
+	butterfly.position = new BABYLON.Vector3(0,-5,0);
+	console.log("butterfly ",butterfly.position.x,butterfly.position.y,butterfly.position.z);
+	//clone the butterfly in two others
+	var butter2 = butterfly.clone("butter2");
+	var butter3 = butterfly.clone("butter3");
+	
+	butter2.position = new BABYLON.Vector3(5,5,0);
+	butter2.skeleton = butterfly.skeleton.clone("clonedSkeleton");
+
+	butter3.position = new BABYLON.Vector3(-4,3,0);
+	butter3.skeleton = butterfly.skeleton.clone("clonedSkeleton2");
+
+	scene.beginAnimation(skeletons[0],0,100,true,1.0);
+	scene.beginAnimation(butter2.skeleton,0,100,true,1.0);
+	scene.beginAnimation(butter3.skeleton,0,100,true,1.0);
+
+	const step = .01;
+	var sign1 = -1;
+	var sign2 = 1;
+	var sign3 = 1;
+	var sign4 = 1;
+	var sign5 = -1;
+	var sign6 =1;
+	var sign7 = 1;
+	var sign8 =1;
+	var sign9 =-1;
+	var flap = 0;
+	function direction(){
+	  sign = Math.random() < 0.5 ?  1 :  -1;
+	  return sign;
+	}
+
+	//move butterflies in skybox
+	scene.registerBeforeRender(function() {
+	  if ((flap %150) < .001) {
+		sign1 = direction();
+	        sign2 = direction();
+		sign3 = direction();
+	  };
+	  if ((flap % 100) < .001) {
+		sign4 = direction();
+		sign5 = direction();
+		sign6 = direction();
+	  };
+	  if ((flap % 200) < .001){
+		sign7 = direction();
+		sign8 = direction();
+		sign9 = direction();
+	  };
+	  butterfly.position.x +=step * sign1;
+	  if (butterfly.position.x > 23){
+	     butterfly.position.x = 23;
+          }
+	  butterfly.position.y += step * sign2;
+	  if (butterfly.position.y > 23){
+	     butterfly.position.y = 23;
+          }
+	  butterfly.position.z += step * sign3 ;
+	  if (butterfly.position.z > 23){
+	     butterfly.position.z = 23;
+          }
+  	  butter2.position.x += step *sign4;
+	  if (butter2.position.x > 23){
+	     butter2.position.x = 23;
+          }
+	  butter2.position.y += step * sign5;
+	  if (butter2.position.y > 23){
+	     butter2.position.y = 23;
+          }
+	  butter2.position.z += step * sign6;
+	  if (butter2.position.z > 23){
+	     butter2.position.z = 23;
+          }
+	 butter3.position.x += step * sign7;
+	  if (butter3.position.x > 23){
+	     butter3.position.x = 23;
+          }
+	  butter3.position.y += step * sign8;
+	  if (butter3.position.y > 23){
+	     butter3.position.y = 23;
+          }
+	  butter3.position.z += step * sign9; 
+	  if (butter3.position.z > 23){
+	     butter3.position.z = 23;
+          }
+	  flap++;
+	});
+});	
+	return scene;
+	};
+
+
+      var scene = createScene();
+      engine.runRenderLoop(function(){
+        scene.render();
+      });
+      // Resize
+      window.addEventListener("resize", function () {
+          engine.resize();
+        });
+
+      </script>
+  </body>
+</html>

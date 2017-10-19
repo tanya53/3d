@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Babyguys - level 1</title>
+
+    <style>
+      html,body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding:0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height:100%;
+        touch-action: none;
+      }
+    </style>
+
+    <script src="babylon.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+
+
+  </head>
+
+  <body>
+    <p>we made it here</p>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+    //one image used as skybox http://www.babylonjs-playground.com/#27FN5R#12
+    // https://babylonjsguide.github.io/advanced/Reflect - shows which size
+    //create rectangle
+    //var options = {width:20,height:10,depth:4};  var box = BABYLON.MeshBuilder.CreateBox('box',options,scene);
+      var canvas = document.getElementById("renderCanvas");
+      var movebox6 = false;
+      //load the babylon 3d engine
+      var engine = new BABYLON.Engine(canvas,true);
+
+      //creation of function that we cal just after it's build
+      var createScene = function(){
+
+        //create basic babylon scene object
+        var scene = new BABYLON.Scene(engine);
+        var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera",0,0,0,BABYLON.Vector3.Zero(),scene);
+        camera.setPosition(new BABYLON.Vector3(0,15,-30));
+        scene.activeCamera = camera;
+        scene.activeCamera.attachControl(canvas,false);
+        var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0,1,0),scene);
+        light.intensity = .5;
+
+
+        //var box = BABYLON.Mesh.CreateBox("box",2.0,scene);
+        var materialBox = new BABYLON.StandardMaterial("texture1",scene);
+        materialBox.emissiveColor = new BABYLON.Color3(.25,0,5);
+        let start = 0;
+
+        //color change on click
+        var box1 = BABYLON.Mesh.CreateBox("box1",2.0,scene);
+        box1.material = new BABYLON.StandardMaterial("texture1",scene);
+        box1.material.emissiveColor = new BABYLON.Color3(.25,0,5);
+        box1.position = new BABYLON.Vector3(start,0,0);
+        start = start-3;
+        box1.actionManager = new BABYLON.ActionManager(scene);
+        box1.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,function(){box1.material.emissiveColor = new BABYLON.Color3(.5,0,.25)}));
+
+        //box disappears on click
+        var box2 = BABYLON.Mesh.CreateBox("box2",2.0,scene);
+        box2.material = materialBox;
+        box2.position = new BABYLON.Vector3(start,0,0);
+        box2.actionManager = new BABYLON.ActionManager(scene)
+        box2.actionManager.registerAction(new BABYLON.InterpolateValueAction(BABYLON.ActionManager.OnPickTrigger,box2,"visibility",0.2,1000));
+        testfunction = function(){
+          console.log("we made it to testfunction");
+        };
+        start = start -3;
+
+        //fountain
+        var box3 = BABYLON.Mesh.CreateBox("box3",2.0,scene);
+        box3.material = materialBox;
+        box3.position = new BABYLON.Vector3(start,0,0);
+        box3.actionManager = new BABYLON.ActionManager(scene);
+        box3.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+            console.log("we are here ********");
+            var particleSystem = new BABYLON.ParticleSystem("particles",2000,scene);
+            particleSystem.particleTexture = new BABYLON.Texture("Flare.png",scene);
+
+            //where the particles come from
+            particleSystem.emitter = box3; //starting object, the emitter, a box in this case
+            particleSystem.minEmitBox = new BABYLON.Vector3(-1,0,0);//starting from
+            particleSystem.maxEmitBox = new BABYLON.Vector3(1,0,0);//To ...
+
+            //colors of the particles color1 &2 combined, colrDead just before disappear
+            particleSystem.color1 = new BABYLON.Color4(0.7,0.8,1.0,1.0);
+            particleSystem.color2 = new BABYLON.Color4(0.2,0.5,1.0,1.0);
+            particleSystem.colorDead = new BABYLON.Color4(0,0,0.2,0.0);
+
+            //size of each particle (random between...)
+            particleSystem.minSize =0.1;
+            particleSystem.maxSize = 0.5;
+
+            //Life time of each particle (random between ...)
+            particleSystem.minLifeTime = 0.3;
+            particleSystem.maxLifeTime = 1.5;
+
+            //Emission rate - density of particles, rate of particle flow
+            particleSystem.emitRate = 1500;//continuous
+            //particleSystem.manualEmitCount = 300;//one burst of 300
+            //blend mode - BLENDMOTE_ONEONE(default, no alpha), or BLENDMODE_STANDARD - uses alpha
+            particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+            //set gravity - for example fire travels upward
+            particleSystem.gravity = new BABYLON.Vector3(0,-9.81,0);
+
+            //Direction of each particle after it has been emitted- emitted between two vecors
+            particleSystem.direction1 = new BABYLON.Vector3(-7,8,3);
+            particleSystem.direction2 = new BABYLON.Vector3(7,8,-3);
+
+            //angular speed in radians
+            particleSystem.minAngularSpeed = 0;
+            particleSystem.maxAngularSpeed = Math.PI;
+
+            //speed
+            particleSystem.minEmitPower =1;
+            particleSystem.maxEmitPower = 3;
+            particleSystem.updateSpeed = 0.005;
+
+            //start the particle system
+            particleSystem.start();
+            particleSystem.disposeOnStop = true;
+            particleSystem.targetStopDuration = 5;
+          }));
+
+        start = start -3;
+        //box4 moves up and down
+        var box4 = BABYLON.Mesh.CreateBox("box4",2.0,scene);
+        box4.material = materialBox;
+        box4.position = new BABYLON.Vector3(start,0,0);
+        var animationBox = new BABYLON.Animation("movebox","position.z",30,BABYLON.Animation.ANIMATIONTYPE_FLOAT,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+        var keys= []; //hold animations
+        keys.push({
+          frame:0,
+          value:0
+        });
+        keys.push({
+          frame:20,
+          value:10
+        });
+
+        keys.push({
+          frame:70,
+          value:-10
+        });
+        keys.push({
+          frame:100,
+          value:0
+        })
+        animationBox.setKeys(keys);
+        box4.animations.push(animationBox);
+
+        box4.actionManager = new BABYLON.ActionManager(scene)
+        box4.actionManager.registerAction((new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+            console.log("we are in the move function");
+            scene.beginAnimation(box4,0,100,true)})));
+
+        start = start-3;
+        //box 5 does sprite animationBox
+        start = 3;
+        var box5 = BABYLON.Mesh.CreateBox("box5",2.0,scene);
+        box5.material = materialBox;
+        box5.position = new BABYLON.Vector3(start,0,0);
+        box5.actionManager = new BABYLON.ActionManager(scene);
+        box5.actionManager.registerAction((new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+            var spriteManagerPlayer = new BABYLON.SpriteManager("playerManagr","sprite.png",1,77,scene);
+            var player = new BABYLON.Sprite("player",spriteManagerPlayer);
+            player.position.y =4;
+            player.position.x = +10;
+            player.width= 10;
+            player.height=8;
+            //param - start frame, stop frame, loop or not, delay between frames
+            player.playAnimation(0,8,true,200);//was 100
+          })));
+        start = start +3;
+        var box6 = BABYLON.Mesh.CreateBox("box6",2.0,scene);
+        box6.material = new BABYLON.StandardMaterial("texture1",scene);
+        box6.material.emissiveColor = new BABYLON.Color3(.25,0,5);
+        box6.position = new BABYLON.Vector3(start,0,0);
+        box6.actionManager = new BABYLON.ActionManager(scene);
+        box6.actionManager.registerAction((new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+              movebox6 = true;
+              sign = 1;
+              return movebox6;
+          })));
+        start =start + 3;
+        var box7 = BABYLON.Mesh.CreateBox("box7",2.0,scene);
+        box7.material = materialBox;
+        box7.position = new BABYLON.Vector3(start,0,0);
+        box7.actionManager = new BABYLON.ActionManager(scene);
+        box7.actionManager.registerAction((new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+              var widthCanvas = 4, heightCanvas = 2;
+              var textTitle = new BABYLON.DynamicTexture("textTitle",{width:512,height:256},scene,true);
+              textTitle.drawText("Happy Birthday",null,128,"Bold 40px Arial","rgba(255,255,255,10.0)","blue");
+              textTitle.update();
+              var titleMat = new BABYLON.StandardMaterial("titleMat",scene);
+              titleMat.diffuseTexture = textTitle;
+              titleMat.diffuseTexture.hasAlpha = true;
+              titleMat.emissiveColor = BABYLON.Color3.White();
+
+              var titleMesh = BABYLON.Mesh.CreatePlane("title",widthCanvas,scene);
+              titleMesh.scaling.x = widthCanvas;
+              titleMesh.material = titleMat;
+              titleMesh.position.z =-4;
+              titleMesh.position.y = -5;
+
+
+
+          })));
+        start = start + 3;
+        var box8 = BABYLON.Mesh.CreateBox("box8",2.0,scene);
+        box8.material = materialBox;
+        box8.position = new BABYLON.Vector3(start,0,0);
+        box8.actionManager = new BABYLON.ActionManager(scene);
+        box8.actionManager.registerAction((new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
+          function(){
+            var faceColors = new Array(6);
+            faceColors[4] = new BABYLON.Color4(1,0,0,1); //red top
+            faceColors[1] = new BABYLON.Color4(0,1,0,1); //green front
+            faceColors[2] = new BABYLON.Color4(0,0,0,0);
+            faceColors[3] = new BABYLON.Color4(0,0,1,1);
+            var options = {
+              width:10,
+              height:3,
+              depth:5,
+              faceColors : faceColors
+            };
+            var box = BABYLON.MeshBuilder.CreateBox('box',options,scene);
+            box.position = new BABYLON.Vector3(-3,4,0);
+          })));
+        start = start + 3;
+        var box9 = BABYLON.Mesh.CreateBox("box9",2.0,scene);
+        box9.material = materialBox;
+        box9.position = new BABYLON.Vector3(start,0,0);
+        start +=3;
+        var box10 = BABYLON.Mesh.CreateBox("box10",2.0,scene);
+        box10.material = materialBox;
+        box10.position = new BABYLON.Vector3(start,0,0);
+        //skybox
+        //manual creation free source of sykboxes, textures etc http://3delyvisions.co/skf1.htm
+        var skybox = BABYLON.Mesh.CreateBox("skyBox",100.0,scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox",scene);
+        skybox.renderingGroupID = 0;//skybox will render behind everything
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.disableLighting = true; // remove light reflections
+        skybox.material = skyboxMaterial;
+        skybox.infiniteDistance = true;  //skybox follows camera position
+
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("skybox",scene);
+        skyboxMaterial.reflectionTexture.coordinateMode = BABYLON.Texture.SKYBOX_MODE;
+
+        var envTexture = new BABYLON.CubeTexture()
+var temp;
+
+
+
+var newMeshes = [];
+
+/*function importedMeshes(mesh) {
+
+mesh.position = new BABYLON.Vector3(0, 0, 0); // for
+
+mesh.scaling = new BABYLON.Vector3(.025, .025, .025); // example
+
+}*/
+
+console.log("newMeshes ",newMeshes);
+BABYLON.SceneLoader.ImportMesh("", "", "test1.babylon", scene, function (newMeshes,temp) {
+console.log("newMeshes 2 ",newMeshes)
+var cylindar = newMeshes[0];
+cylindar.position = new BABYLON.Vector3(8,8,8);
+var temp = new BABYLON.Mesh.CreateBox("temp",1,scene);
+temp.material = new BABYLON.StandardMaterial("texture1",scene);
+var sphere1 = newMeshes[1];
+sphere1.parent = temp;
+var sphere2 = newMeshes[2];
+sphere2.parent = temp;
+var sphere3 = newMeshes[3];
+sphere3.parent = temp;
+temp.position = new BABYLON.Vector3(-6,-6,-6);
+console.log("sphere1 ",sphere1.position.x,sphere1.position.y,sphere1.position.z);
+console.log("sphere2 ",sphere2.position.x,sphere2.position.y,sphere2.position.z);
+console.log("sphere3 ",sphere3.position.x,sphere3.position.y,sphere3.position.z);
+
+var cube = newMeshes[4]
+console.log("*******we are executing this code now ",cube,cylindar,shpere1,spher2,sphere3);
+
+});
+
+console.log("we are executing this code now");
+        //create a group of cubes with invisible parent, now move as group
+        var myparent = new BABYLON.Mesh.CreateBox("myparent",1,scene);
+        var bar1 = new BABYLON.Mesh.CreateBox("bar1",1,scene);
+        bar1.position = new BABYLON.Vector3(0,2,2);
+        bar1.parent = myparent;
+        var bar2 = new BABYLON.Mesh.CreateBox("bar2",1,scene);
+        bar2.position = new BABYLON.Vector3(0,2,3);
+        bar2.parent = myparent;
+        var bar3 = new BABYLON.Mesh.CreateBox("bar3",1,scene);
+        bar3.position = new BABYLON.Vector3(0,2,4);
+        bar3.parent = myparent;
+        myparent.position.x = -5;
+        myparent.position.y = 5;
+        myparent.position.z = 5;
+        //can hide the parent
+        myparent.isVisible = false;
+
+        scene.registerBeforeRender(function () {
+            if (movebox6){
+              box6.position.x +=  sign * .02;
+              if (box6.intersectsMesh(box7,false)){
+                sign = -1;
+                box6.material.emissiveColor = new BABYLON.Color3(1,0,0);
+              }
+              if (box6.intersectsMesh(box5,false)){
+                box6.material.emissiveColor = new BABYLON.Color3(0,1,0);
+                sign = 1;
+              }
+            }
+            if (temp != null){console.log("%%%%%%%%%%%%%%%% ",temp);}
+        });
+        return scene;
+      };
+      var scene = createScene();
+      engine.runRenderLoop(function(){
+        scene.render();
+      });
+      // Resize
+      window.addEventListener("resize", function () {
+          engine.resize();
+        });
+
+      </script>
+  </body>
+</html>

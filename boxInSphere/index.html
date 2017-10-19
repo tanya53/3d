@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Babyguys - level 1</title>
+
+    <style>
+      html,body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding:0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height:100%;
+        touch-action: none;
+      }
+    </style>
+
+    <script src="babylon.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+
+
+  </head>
+
+  <body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+
+      var canvas = document.getElementById("renderCanvas");
+
+      //load the babylon 3d engine
+      var engine = new BABYLON.Engine(canvas,true);
+
+      //creation of function that we cal just after it's build
+      var createScene = function(){
+      var scene = new BABYLON.Scene(engine);
+      scene.clearColor = BABYLON.Color3.Black();
+      var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI/2, 0, 0, BABYLON.Vector3.Zero(), scene);
+      var light = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(250, 250, 50), scene);
+
+      camera.setPosition(new BABYLON.Vector3(0, 0, 8));
+      camera.upperBetaLimit = Math.PI/2;
+      camera.lowerBetaLimit = Math.PI/2;
+      camera.attachControl(canvas);
+
+      var box5 = BABYLON.Mesh.CreateBox("Box5", 2, scene);
+
+      // Box5 material
+      material = new BABYLON.StandardMaterial("bab5", scene);
+      material.emissiveColor = new BABYLON.Color3(1, 0, 0);
+      material.specularColor = new BABYLON.Color3(1, 0, 0);
+
+      box5.material = material;
+
+      var sphere5 = BABYLON.Mesh.CreateSphere("Sphere5", 64, 5, scene);
+
+      // Sphere5 material
+      material = new BABYLON.StandardMaterial("kosh5", scene);
+      material.diffuseColor = new BABYLON.Color3(0, 0, 0);
+      material.reflectionTexture = new BABYLON.CubeTexture("/skybox", scene);
+      material.reflectionTexture.level = 3;
+      material.specularPower = 150;
+      material.emissiveColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+      material.alpha = 0.8;
+
+      // Fresnel
+      material.emissiveFresnelParameters = new BABYLON.FresnelParameters();
+      material.emissiveFresnelParameters.bias = 0.4;
+      material.emissiveFresnelParameters.power = 140;
+      material.emissiveFresnelParameters.leftColor = BABYLON.Color3.Red();
+      material.emissiveFresnelParameters.rightColor = BABYLON.Color3.Blue();
+
+      sphere5.material = material;
+      // sphere5.convertToFlatShadedMesh();
+
+      scene.registerBeforeRender(function() {
+          box5.rotation.z += 0.01;
+          camera.alpha += 0.005;
+      });
+
+
+        return scene;
+      };
+      var scene = createScene();
+      engine.runRenderLoop(function(){
+        scene.render();
+      });
+      // Resize
+      window.addEventListener("resize", function () {
+          engine.resize();
+        });
+      </script>
+  </body>
+</html>
