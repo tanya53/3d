@@ -58,7 +58,7 @@ console.log("in create scene");
 
 
 
-	//scene.beginAnimation(skeletons[0],0,100,true,1.0);
+	scene.beginAnimation(snowman,0,100,true,1.0);
 
 	});
 
@@ -72,17 +72,29 @@ console.log("plane ",plane);
 
 	//create snow using particle system
 	//params: name,url,max nor, cell size, scene
-	var snowManager = new BABYLON.SpriteManager("snowManagr","snowflake.png",1,800,scene);
-	let startx = 6;
+	var snowManager = new BABYLON.SpriteManager("snowManagr","snowflake.png",10,800,scene);
+	let startx = -6;
     	let starty = 6;
 	let startz = 0;
-	let snowflake = new BABYLON.Sprite("snowflake",snowManager);
-	snowflake.position.x = startx;
-	snowflake.position.y = starty;
-	snowflake.position.z = startz;
-	snowflake.width = .5;
-	snowflake.height = .5;
-
+	let snowflakes = [];
+	for (let i=0;i<10;i++){
+	  let snowflake = new BABYLON.Sprite("snowflake",snowManager);
+	  snowflake.position.x = startx;
+	  snowflake.position.y = starty;
+	  snowflake.position.z = startz;
+  	  snowflake.width = .5;
+	  snowflake.height = .5;
+          startx += 1;
+	  snowflakes.push(snowflake);
+        }
+	scene.registerBeforeRender(function(){
+	  snowflakes[0].position.y -= .01;
+	  snowflakes[3].position.y -= .01;
+	  snowflakes[5].position.y -= .01;
+	  snowflakes[7].position.y -= .01;
+	  snowflakes[9].position.y -= .01;
+        });
+	
 	return scene;
 	};
 
