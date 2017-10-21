@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>snowman</title>
+
+    <style>
+      html,body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding:0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height:100%;
+        touch-action: none;
+      }
+    </style>
+
+    <script src="babylon.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+
+
+  </head>
+
+  <body>
+
+   <canvas id="renderCanvas"></canvas>
+    <script>
+      var canvas = document.getElementById("renderCanvas");
+      //load the babylon 3d engine
+      var engine = new BABYLON.Engine(canvas,true);
+
+      //creation of function that we cal just after it's build
+      var createScene = function(){
+console.log("in create scene");
+        //create basic babylon scene object
+        var scene = new BABYLON.Scene(engine);
+        var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera",0,0,0,BABYLON.Vector3.Zero(),scene);
+        camera.setPosition(new BABYLON.Vector3(0,15,-30));
+        scene.activeCamera = camera;
+        scene.activeCamera.attachControl(canvas,false);
+        var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(-10,-10,0),scene);//was (0,1,0)
+        light.intensity = 1;
+
+	// import snowman
+	var temp;
+	var newMeshes = [];
+	console.log("newMeshes ",newMeshes);
+	BABYLON.SceneLoader.ImportMesh("", "", "snowman.babylon", scene, function (newMeshes,particleSystems,skeletons) {
+	console.log("newMeshes 2 ",newMeshes)
+	var snowman = newMeshes[0];
+
+	snowman.position = new BABYLON.Vector3(3,0,0);
+
+
+
+	//scene.beginAnimation(skeletons[0],0,100,true,1.0);
+
+	});
+
+	//add ground
+	var plane = BABYLON.Mesh.CreatePlane("plane",25.0, scene);
+	plane.material = new BABYLON.StandardMaterial("texture1",scene);
+	plane.position = new BABYLON.Vector3(0,0,0);
+        plane.material.emissiveColor = new BABYLON.Color3(.8,.8,.8);
+	plane.rotation.x = Math.PI/2;
+console.log("plane ",plane);
+
+	//create snow using particle system
+	//params: name,url,max nor, cell size, scene
+	var snowManager = new BABYLON.SpriteManager("snowManagr","snowflake.png",1,800,scene);
+	let startx = 6;
+    	let starty = 6;
+	let startz = 0;
+	let snowflake = new BABYLON.Sprite("snowflake",snowManager);
+	snowflake.position.x = startx;
+	snowflake.position.y = starty;
+	snowflake.position.z = startz;
+	snowflake.width = .5;
+	snowflake.height = .5;
+
+	return scene;
+	};
+
+
+
+      var scene = createScene();
+      engine.runRenderLoop(function(){
+        scene.render();
+      });
+      // Resize
+      window.addEventListener("resize", function () {
+          engine.resize();
+        });
+
+      </script>
+  </body>
+</html>

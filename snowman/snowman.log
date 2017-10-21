@@ -1,0 +1,40 @@
+Exporter version: 5.4.0, Blender version: 2.79 (sub 0)
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used:
+		selected layers only:  false
+		flat shading entire scene:  false
+		inline textures:  false
+		texture directory:  /Users/Tanya/Desktop/3d/snowman/
+	Python World class constructor completed
+	processing begun of skeleton:  Armature, id:  0
+		processing begun of bone:  root, index:  0
+		processing begun of bone:  body, index:  1
+		processing begun of bone:  neck, index:  2
+		processing begun of bone:  head, index:  3
+		processing begun of bone:  hat, index:  4
+	processing begun of mesh:  Sphere
+		processing begun of Standard material:  snowman
+		processing begun of Standard material:  scarf
+		processing begun of Standard material:  hat
+		processing begun of Standard material:  eyes
+		processing begun of Standard material:  nose
+		processing begun of multimaterial:  snowman.Multimaterial#0
+		num positions      :  618
+		num normals        :  618
+		num uvs            :  1236
+		num uvs2           :  0
+		num colors         :  0
+		num indices        :  1677
+		Skeleton stats:  
+			Total Influencers:  815
+			Avg # of influencers per vertex:  1.3188
+			Highest # of influencers observed:  2, num vertices with this:  197
+			exported as 2 influencers
+			num skeletonWeights and skeletonIndices:  2472
+		WARNING: # of 0 area faces found:  20
+	processing begun of camera (UniversalCamera):  Camera
+	processing begun of light (POINT):  Lamp
+========= Writing of scene file started =========
+========= Writing of scene file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.3097 secs
