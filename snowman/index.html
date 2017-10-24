@@ -49,11 +49,15 @@ console.log("in create scene");
 	// import snowman
 	var temp;
 	var newMeshes = [];
-	console.log("newMeshes ",newMeshes);
 	BABYLON.SceneLoader.ImportMesh("", "", "snowman.babylon", scene, function (newMeshes,particleSystems,skeletons) {
 	console.log("newMeshes 2 ",newMeshes)
-	var snowman = newMeshes[0];
+	console.log(newMeshes[0].skeleton);
+	console.log(newMeshes[0].skeleton.bones[4]);
+	console.log(newMeshes[0].skeleton.bones[4].length);
 
+	var snowman = newMeshes[0];
+	snowman.scaling = new BABYLON.Vector3(2,2,2);
+	//snowman.skeleton[0].scale(.5,.5,.5);
 	snowman.position = new BABYLON.Vector3(3,0,0);
 
 
@@ -87,12 +91,14 @@ console.log("plane ",plane);
           startx += 1;
 	  snowflakes.push(snowflake);
         }
+
 	scene.registerBeforeRender(function(){
 	  snowflakes[0].position.y -= .01;
 	  snowflakes[3].position.y -= .01;
 	  snowflakes[5].position.y -= .01;
 	  snowflakes[7].position.y -= .01;
 	  snowflakes[9].position.y -= .01;
+
         });
 	
 	return scene;

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>schooling fish</title>
+
+    <style>
+      html,body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding:0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height:100%;
+        touch-action: none;
+      }
+    </style>
+
+    <script src="babylon.js"></script>
+    <script src="hand.minified-1.2.js"></script>
+
+
+  </head>
+
+  <body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+
+      var canvas = document.getElementById("renderCanvas");
+
+      //load the babylon 3d engine
+      var engine = new BABYLON.Engine(canvas,true);
+
+      //creation of function that we cal just after it's build
+      var createScene = function(){
+      var scene = new BABYLON.Scene(engine);
+      scene.clearColor = BABYLON.Color3.Black();
+      var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI/2, 0, 0, BABYLON.Vector3.Zero(), scene);
+      var light = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(250, 250, 50), scene);
+
+      camera.setPosition(new BABYLON.Vector3(0, 0, 8));
+      camera.upperBetaLimit = Math.PI/2;
+      camera.lowerBetaLimit = Math.PI/2;
+      camera.attachControl(canvas);
+
+      //create test food ball
+      var food = BABYLON.Mesh.CreateSphere("food",1,.25,scene);
+      food.isVisible = false;
+      food.position = new BABYLON.Vector3(-2,2,0);
+      let fishes = [];
+      BABYLON.SceneLoader.ImportMesh("", "", "fish.babylon", scene, function (newMeshes,particleSystems,skeletons) {
+      var fish = newMeshes[0];
+      const maxFish = 216;
+      fishes.push(fish);
+      //create instances - more efficient
+      for (var i=1;i<maxFish;i++){
+        var newfish = fish.createInstance("fish:"+i);
+        fishes.push(newfish);
+      }
+        //add fish to scene
+        let x = 0;
+        let z = -1.5;
+        let y = -1.5;
+        let ind = 0;
+
+        for (let k=0;k<6;k++){
+          y = -1.5;
+          for (let j=0;j<6;j++){
+            x =-1.5;
+	          for (let i=0;i<6;i++){
+	            fishes[ind].position = new BABYLON.Vector3(x,y,z);
+              fishes[ind].signx = (x > food.position.x) ? "neg" : "pos";
+              fishes[ind].signy = (y > food.position.y) ? "neg" :"pos";
+              fishes[ind].signz = (z > food.position.z) ? "neg" : "pos";
+              ind++;
+              x += .5;
+            }
+            y += .5;
+          }
+          z += .5;
+        }
+
+
+        function rotateFish(fish,food,rot){
+          return (fish > food) ? -Math.PI/4 : Math.PI/4
+        }
+
+        //find angle
+        var axis1 = fishes[0].position.subtract(food.position);
+        var axis2 = BABYLON.Vector3.Cross(axis1,new BABYLON.Vector3(0,1,0));
+        var axis3 = BABYLON.Vector3.Cross(axis1,axis2);
+			  var newRotation = BABYLON.Vector3.RotationFromAxis(axis1, axis2, axis3);
+
+        for (var tind=0;tind<maxFish;tind++){
+          fishes[tind].rotation = newRotation;
+        }
+        function movefish(fish,food,sign,step){
+          if (fish ==food) {return fish;}
+          return (sign == "pos") ? fish+step : fish-step;
+        }
+
+        let move =0;
+        let cnt = 0;
+
+        function sign(){
+          return Math.random() <0.5 ? 1: -1;
+        }
+        let stepx = Math.abs(fishes[0].position.x - food.position.x)/120;
+        let stepy = Math.abs(fishes[0].position.y - food.position.y)/120;
+        let stepz = Math.abs(fishes[0].position.z - food.position.z)/120;
+        function createfood(food) {
+          var x = sign() * Math.random()*3;
+          var y = sign() * Math.random()*3;
+          var z = sign() * Math.random()*3;
+          food.position = new BABYLON.Vector3(x,y,z);
+          stepx = Math.abs(fishes[0].position.x - food.position.x)/120;
+          stepy = Math.abs(fishes[0].position.y - food.position.y)/120;
+          stepz = Math.abs(fishes[0].position.z - food.position.z)/120;
+          return food;
+          }
+
+
+	      scene.registerBeforeRender(function() {
+          if (move > 15){
+            cnt++;
+            for (let i =0;i<maxFish;i++){
+              let x = movefish(fishes[i].position.x,food.position.x,fishes[i].signx,stepx);
+              let y = movefish(fishes[i].position.y,food.position.y,fishes[i].signy,stepy);
+              let z = movefish(fishes[i].position.z,food.position.z,fishes[i].signz,stepz);
+              fishes[i].position = new BABYLON.Vector3(x,y,z);
+              if (fishes[i].intersectsMesh(food,false)){
+                food = createfood(food);
+                let tsignx = (fishes[0].position.x > food.position.x) ? "neg" : "pos";
+                let tsigny = (fishes[0].position.y > food.position.y) ? "neg" :"pos";
+                let tsignz = (fishes[0].position.z > food.position.z) ? "neg" : "pos";
+                axis1 = fishes[0].position.subtract(food.position);
+                axis2 = BABYLON.Vector3.Cross(axis1,new BABYLON.Vector3(0,0,1));
+                axis3 = BABYLON.Vector3.Cross(axis1,axis2);
+                var newRotation = BABYLON.Vector3.RotationFromAxis(axis1,axis2,axis3);
+
+                for (var k=0;k<maxFish;k++){
+                  fishes[k].rotation = newRotation;
+                  fishes[k].signx = tsignx;
+                  fishes[k].signy = tsigny;
+                  fishes[k].signz = tsignz;
+                }
+              }
+            }
+          }
+          move ++;
+
+        });
+
+      });//importMesh
+      return scene;
+      };
+      var scene = createScene();
+      engine.runRenderLoop(function(){
+        scene.render();
+      });
+      // Resize
+      window.addEventListener("resize", function () {
+          engine.resize();
+        });
+      </script>
+  </body>
+</html>
